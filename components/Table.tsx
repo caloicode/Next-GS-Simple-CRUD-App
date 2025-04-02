@@ -1,10 +1,12 @@
-'use client';
+"use client";
 
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/solid';
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+
+type RowData = [string, string, string];
 
 type Props = {
-  data: any[];
-  onEdit: (row: any, index: number) => void;
+  data: RowData[];
+  onEdit: (row: RowData, index: number) => void;
   onDelete: (index: number) => void;
 };
 
@@ -25,7 +27,9 @@ export default function Table({ data, onEdit, onDelete }: Props) {
               key={index}
               className="odd:bg-gray-50 even:bg-white dark:odd:bg-neutral-800 dark:even:bg-neutral-900 text-gray-800 dark:text-gray-100"
             >
-              <td className="px-4 py-3">{row[0]} {row[1]}</td>
+              <td className="px-4 py-3">
+                {row[0]} {row[1]}
+              </td>
               <td className="px-4 py-3">{row[2]}</td>
               <td className="px-4 py-3 flex items-center justify-center gap-2">
                 <button className="icon-btn" onClick={() => onEdit(row, index)}>

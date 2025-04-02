@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 type Props = {
   onClose: () => void;
   isEdit: boolean;
-  currentRow: any;
+  currentRow: (string[] & { index: number }) | null;
   onSuccess: () => void; // Refetch rows on parent side after success
 };
 

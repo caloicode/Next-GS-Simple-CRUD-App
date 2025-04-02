@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PlusIcon } from "@heroicons/react/24/solid";
 import FormModal from "@/components/FormModal";
 import Table from "@/components/Table";
 import DeleteConfirm from "@/components/DeleteConfirm";
@@ -9,8 +8,12 @@ import DeleteConfirm from "@/components/DeleteConfirm";
 export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-  const [currentRow, setCurrentRow] = useState<any>(null);
-  const [data, setData] = useState<any[]>([]);
+
+  type RowData = [string, string, string]; // firstName, lastName, email
+  const [currentRow, setCurrentRow] = useState<
+    (RowData & { index: number }) | null
+  >(null);
+  const [data, setData] = useState<RowData[]>([]);
 
   // Delete dialog states
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -23,30 +26,6 @@ export default function Home() {
     const json = await res.json();
     setData(json.data);
     setLoading(false);
-  };
-
-  const addRow = async (row: [string, string, string]) => {
-    await fetch("/api/sheets", {
-      method: "POST",
-      body: JSON.stringify({
-        firstName: row[0],
-        lastName: row[1],
-        email: row[2],
-      }),
-      headers: { "Content-Type": "application/json" },
-    });
-    fetchRows();
-    setShowModal(false);
-  };
-
-  const updateRow = async (row: [string, string, string]) => {
-    await fetch("/api/sheets/update", {
-      method: "PUT",
-      body: JSON.stringify({ row, index: currentRow.index }),
-      headers: { "Content-Type": "application/json" },
-    });
-    fetchRows();
-    setShowModal(false);
   };
 
   const handleDelete = (index: number) => {
