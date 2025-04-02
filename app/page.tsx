@@ -1,28 +1,26 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import FormModal from "@/components/FormModal";
-import Table from "@/components/Table";
-import DeleteConfirm from "@/components/DeleteConfirm";
+import { useState, useEffect } from 'react';
+import FormModal from '@/components/FormModal';
+import Table from '@/components/Table';
+import DeleteConfirm from '@/components/DeleteConfirm';
+
+type RowData = [string, string, string];
+type RowWithIndex = { data: RowData; index: number };
 
 export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-
-  type RowData = [string, string, string]; // firstName, lastName, email
-  const [currentRow, setCurrentRow] = useState<
-    (RowData & { index: number }) | null
-  >(null);
+  const [currentRow, setCurrentRow] = useState<RowWithIndex | null>(null);
   const [data, setData] = useState<RowData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Delete dialog states
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [rowToDelete, setRowToDelete] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
 
   const fetchRows = async () => {
     setLoading(true);
-    const res = await fetch("/api/sheets");
+    const res = await fetch('/api/sheets');
     const json = await res.json();
     setData(json.data);
     setLoading(false);
@@ -35,13 +33,13 @@ export default function Home() {
 
   const confirmDelete = async () => {
     if (rowToDelete !== null) {
-      await fetch("/api/sheets/delete", {
-        method: "DELETE",
+      await fetch('/api/sheets/delete', {
+        method: 'DELETE',
         body: JSON.stringify({ index: rowToDelete }),
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
       });
-      setShowDeleteDialog(false);
       setRowToDelete(null);
+      setShowDeleteDialog(false);
       fetchRows();
     }
   };
@@ -52,19 +50,19 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-100 flex flex-col items-center justify-start p-4">
-      {/* Title and Plus Button */}
-      <div className="flex justify-between items-center w-full max-w-4xl mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+      {/* Title and Add Button */}
+      <div className="w-full max-w-4xl mb-2">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
           Next-GS CRUD Test
         </h1>
-        <div className="w-full max-w-4xl flex justify-end mb-4">
+        <div className="flex justify-end">
           <button
+            className="btn-blue text-sm px-4 py-2"
             onClick={() => {
               setIsEdit(false);
               setCurrentRow(null);
               setShowModal(true);
             }}
-            className="btn-blue text-sm px-4 py-2"
           >
             Add Row
           </button>
@@ -81,7 +79,7 @@ export default function Home() {
         />
       )}
 
-      {/* Delete Dialog */}
+      {/* Delete Confirm Dialog */}
       {showDeleteDialog && (
         <DeleteConfirm
           onConfirm={confirmDelete}
@@ -97,7 +95,7 @@ export default function Home() {
           data={data}
           onEdit={(row, index) => {
             setIsEdit(true);
-            setCurrentRow({ ...row, index });
+            setCurrentRow({ data: row, index }); // ✅ Proper shape
             setShowModal(true);
           }}
           onDelete={handleDelete}

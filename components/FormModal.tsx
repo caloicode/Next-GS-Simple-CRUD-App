@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 
+type RowData = [string, string, string];
+
 type Props = {
   onClose: () => void;
   isEdit: boolean;
-  currentRow: (string[] & { index: number }) | null;
-  onSuccess: () => void; // Refetch rows on parent side after success
+  currentRow: { data: RowData; index: number } | null;
+  onSuccess: () => void;
 };
 
 export default function FormModal({
@@ -23,11 +25,8 @@ export default function FormModal({
 
   useEffect(() => {
     if (isEdit && currentRow) {
-      setForm({
-        firstName: currentRow[0] || '',
-        lastName: currentRow[1] || '',
-        email: currentRow[2] || '',
-      });
+      const [firstName, lastName, email] = currentRow.data;
+      setForm({ firstName, lastName, email });
     }
   }, [isEdit, currentRow]);
 
@@ -39,27 +38,21 @@ export default function FormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const payload = {
-      firstName: form.firstName,
-      lastName: form.lastName,
-      email: form.email,
-    };
+    const row: RowData = [form.firstName, form.lastName, form.email];
 
-    const url = isEdit ? '/api/sheets/update' : '/api/sheets';
-    const method = isEdit ? 'PUT' : 'POST';
-    const body = isEdit
-      ? JSON.stringify({ row: [form.firstName, form.lastName, form.email], index: currentRow.index })
-      : JSON.stringify(payload);
-
-    const res = await fetch(url, {
-      method,
+    const res = await fetch(isEdit ? '/api/sheets/update' : '/api/sheets', {
+      method: isEdit ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body,
+      body: JSON.stringify(
+        isEdit
+          ? { row, index: currentRow?.index }
+          : { firstName: row[0], lastName: row[1], email: row[2] }
+      ),
     });
 
     if (res.ok) {
-      onSuccess(); // triggers refetch
-      onClose();   // close modal
+      onSuccess();
+      onClose();
     } else {
       console.error('Failed to submit:', await res.json());
       alert('Submission failed. Check console for details.');
@@ -102,7 +95,10 @@ export default function FormModal({
             {isEdit ? 'Save Changes' : 'Add Row'}
           </button>
         </form>
-        <button onClick={onClose} className="btn w-full mt-4 text-gray-700 dark:text-gray-200">
+        <button
+          onClick={onClose}
+          className="btn w-full mt-4 text-gray-700 dark:text-gray-200"
+        >
           Close
         </button>
       </div>
