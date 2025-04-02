@@ -1,4 +1,6 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+/google-creds.json
+
+# See https://help.github.com/articles/igno-files/ for more about ignoring files.
 
 # dependencies
 /node_modules
