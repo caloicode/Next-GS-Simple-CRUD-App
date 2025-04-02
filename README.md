@@ -1,36 +1,175 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📗 Google Sheets CRUD with Next.js
 
-## Getting Started
+This guide walks you through setting up a **Google Sheets CRUD app** using **Next.js (App Router)**, **TypeScript**, and **Tailwind CSS** — ready for both local dev and Vercel deployment.
 
-First, run the development server:
+---
+
+## 📝 Google Sheet Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. **Create a new project**
+3. In the sidebar, go to **APIs & Services > Library**
+   - Search and enable **Google Sheets API**
+4. Go to **APIs & Services > Credentials**
+   - Click **Create Credentials > Service Account**
+   - Fill out the name and click **Done**
+5. Click on the service account > **Keys** tab
+   - Add a new key > Choose JSON > Download it
+6. Open your target **Google Sheet**
+   - Click **Share** > add the **service account email** (e.g. `example@project.iam.gserviceaccount.com`) as **Editor**
+
+---
+
+## ⚙️ Project Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npx create-next-app@latest google-sheets-crud
+cd google-sheets-crud
+npm install googleapis @heroicons/react
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```txt
+app/
+  └── api/
+       └── sheets/
+            └── route.ts       # API route for GET, POST, PUT, DELETE
+  └── page.tsx                 # Main UI
+components/
+  └── FormModal.tsx
+  └── Table.tsx
+  └── DeleteConfirm.tsx
+lib/
+  └── googleSheets.ts         # Google Sheets utility functions
+.env.local                     # Your environment variables
+google-creds.json              # (TEMPORARY - see encoding step)
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🔌 Environment Setup
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`.env.local`
+```env
+SPREADSHEET_ID=your_google_sheet_id
+GOOGLE_CREDS_JSON_BASE64=your_encoded_base64_creds
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Important:**
+- Add `google-creds.json` to `.gitignore`
+- To generate the base64 credentials:
+  - Run this command in your terminal:
+    ```bash
+    cat google-creds.json | base64
+    ```
+  - Copy the full output (a long single-line string)
+  - Paste that as the value for `GOOGLE_CREDS_JSON_BASE64` in your `.env.local` file
+  - In Vercel, add it as an environment variable as well
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔧 Google Sheets Utility (lib/googleSheets.ts)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```ts
+import { google } from 'googleapis';
+
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID!;
+const GOOGLE_CREDS_BASE64 = process.env.GOOGLE_CREDS_JSON_BASE64!;
+
+if (!SPREADSHEET_ID || !GOOGLE_CREDS_BASE64) {
+  throw new Error('Missing env vars');
+}
+
+const credentials = JSON.parse(
+  Buffer.from(GOOGLE_CREDS_BASE64, 'base64').toString()
+);
+
+const auth = new google.auth.GoogleAuth({ credentials, scopes: SCOPES });
+const sheets = google.sheets({ version: 'v4', auth });
+
+// Define: getRows, addRow, updateRow, deleteRow using `sheets.spreadsheets.values`
+```
+
+---
+
+## 📡 API Routes (app/api/sheets/route.ts)
+
+```ts
+import { NextRequest, NextResponse } from 'next/server';
+import { getRows, addRow } from '@/lib/googleSheets';
+
+export async function GET() {
+  const rows = await getRows();
+  return NextResponse.json({ data: rows });
+}
+
+export async function POST(req: NextRequest) {
+  const { firstName, lastName, email } = await req.json();
+  if (!firstName || !lastName || !email) {
+    return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+  }
+  await addRow([firstName, lastName, email]);
+  return NextResponse.json({ message: 'Added successfully' });
+}
+```
+
+---
+
+## 🧠 Core Logic Overview
+
+### 1. **lib/googleSheets.ts**
+Handles Google Sheets API interaction securely using base64 credentials and `googleapis`.
+
+### 2. **API Routes**
+`/api/sheets` handles reading and writing rows — logic separated for clean architecture.
+
+### 3. **UI Components**
+The UI components interact through props and state to handle user input, form submissions, and dynamic updates. The main page maintains the core app state, handles interactions like opening modals and triggering API actions, and passes data and callbacks to reusable components for displaying, editing, or deleting data.
+
+---
+
+## 🚀 Deployment (Vercel)
+
+1. Push project to GitHub
+2. Go to [vercel.com](https://vercel.com/) > New Project > Import your repo
+3. Add environment variables:
+   - `SPREADSHEET_ID`
+   - `GOOGLE_CREDS_JSON_BASE64` (base64 of your service account JSON)
+4. Deploy!
+
+---
+
+## 📄 `next.config.ts`
+
+```ts
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+};
+
+export default nextConfig;
+```
+
+---
+
+## 🎨 Styling Extras
+
+### ✅ Tailwind Dark Mode Setup (globals.css)
+```css
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+```
+
+### ✅ Add Heroicons
+```bash
+npm install @heroicons/react
+```
+
+
