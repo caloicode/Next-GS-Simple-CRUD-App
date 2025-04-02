@@ -1,10 +1,15 @@
 import { google } from 'googleapis';
-import credentials from '../google-creds.json';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
-const SPREADSHEET_ID = process.env.SPREADSHEET_ID!; // From .env.local
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID!;
+const GOOGLE_CREDS_BASE64 = process.env.GOOGLE_CREDS_JSON_BASE64!;
 
-if (!SPREADSHEET_ID) throw new Error('SPREADSHEET_ID is not defined in .env.local');
+if (!SPREADSHEET_ID || !GOOGLE_CREDS_BASE64) {
+  throw new Error('Missing SPREADSHEET_ID or GOOGLE_CREDS_JSON_BASE64 in environment variables.');
+}
+
+// Decode the base64 credentials string
+const credentials = JSON.parse(Buffer.from(GOOGLE_CREDS_BASE64, 'base64').toString());
 
 const auth = new google.auth.GoogleAuth({
   credentials,
@@ -12,6 +17,9 @@ const auth = new google.auth.GoogleAuth({
 });
 
 const sheets = google.sheets({ version: 'v4', auth });
+
+// Your existing functions (getRows, addRow, updateRow, deleteRow) follow here...
+
 
 // Function to get all rows
 export async function getRows() {
