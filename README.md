@@ -65,7 +65,7 @@ GOOGLE_CREDS_JSON_BASE64=your_encoded_base64_creds
     ```bash
     cat google-creds.json | base64 -w 0
     ```
-  - Copy the full output (a long single-line string)
+  - Copy the full output (triple-click 📌)
   - Paste that as the value for `GOOGLE_CREDS_JSON_BASE64` in your `.env.local` file
   - In Vercel, add it as an environment variable as well
 
