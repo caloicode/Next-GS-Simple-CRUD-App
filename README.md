@@ -63,7 +63,7 @@ GOOGLE_CREDS_JSON_BASE64=your_encoded_base64_creds
 - To generate the base64 credentials:
   - Run this command in your terminal:
     ```bash
-    base64 -w 0 google-creds.json
+    cat google-creds.json | base64 -w 0
     ```
   - Copy the full output (a long single-line string)
   - Paste that as the value for `GOOGLE_CREDS_JSON_BASE64` in your `.env.local` file
