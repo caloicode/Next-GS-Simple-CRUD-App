@@ -65,7 +65,7 @@ GOOGLE_CREDS_JSON_BASE64=your_encoded_base64_creds
     ```bash
     cat google-creds.json | base64 -w 0
     ```
-  - Copy the full output (triple-click 📌)
+  - Copy the full output (triple-click to not miss any characters 📌)
   - Paste that as the value for `GOOGLE_CREDS_JSON_BASE64` in your `.env.local` file
   - In Vercel, add it as an environment variable as well
 
@@ -171,5 +171,25 @@ export default nextConfig;
 ```bash
 npm install @heroicons/react
 ```
+## 📌 Additional Notes
 
+- 🖼️ **Image Optimization (TinyJPG)**  
+  Use [https://tinyjpg.com/](https://tinyjpg.com/) to compress large images before uploading, especially for Open Graph or embedded previews.
+
+- ⚠️ **Next.js Sync Dynamic Params Error**  
+  If you encounter errors related to dynamic route params, refer to this:  
+  https://nextjs.org/docs/messages/sync-dynamic-apis
+
+- ✍️ **Tailwind Typography Plugin**  
+  Add the plugin directly in your `globals.css` file:  
+  ```css
+  @plugin "@tailwindcss/typography";
+  ```
+
+  This plugin is used in this project to style content coming from `dangerouslySetInnerHTML` (HTML string rendering from Google Sheets).  
+  It ensures proper typography for paragraphs, lists, links, and headings in the notes section, giving a clean and readable format.
+
+- 🔖 **Favicon Format**  
+  Ideal size: `64x64px`  
+  Convert `.jpg` to `.ico` using: [https://convertio.co/](https://convertio.co/)
 
