@@ -193,3 +193,26 @@ npm install @heroicons/react
   Ideal size: `64x64px`  
   Convert `.jpg` to `.ico` using: [https://convertio.co/](https://convertio.co/)
 
+---
+
+### Handling `params` in Next.js 15+
+
+In Next.js 15+, route parameters like `params` are now asynchronous. Direct access without `await` will throw an error:
+
+#### ❌ Incorrect (will cause error)
+```tsx
+// app/projects/[projectId]/page.tsx
+export default async function Page({ params }) {
+  const projectId = params.projectId // ❌ Error: `params` must be awaited
+}
+```
+
+#### ✅ Correct (Next.js 15+ syntax)
+```tsx
+// app/projects/[projectId]/page.tsx
+export default async function Page(props) {
+  const { projectId } = await props.params // ✅ Fix: Await the params
+}
+```
+
+> ℹ️ **Tip**: Only `params`, `searchParams`, `cookies()`, `headers()`, and `draftMode()` need to be awaited. You can delay `await` until you're actually accessing a property to allow more static rendering.
